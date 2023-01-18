@@ -17,6 +17,12 @@ const userSchema = new mongoose.Schema<IUser>({
     required: true,
     minlength: 2,
     maxlength: 30,
+    validate: {
+      validator(v: String) {
+        return v.length >= 2 && v.length <= 30;
+      },
+      message: 'Длинна имени должна быть больше 2',
+    }
   },
   about: {
     type: String,
@@ -27,7 +33,7 @@ const userSchema = new mongoose.Schema<IUser>({
   avatar: {
     type: String,
     required: true,
-    minlength: 2,
+    minlength: 4,
     maxlength: 230,
   },
 });

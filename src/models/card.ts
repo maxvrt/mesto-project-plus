@@ -19,7 +19,7 @@ const cardSchema = new mongoose.Schema<ICard>({
     type: String,
     required: true,
     minlength: 2,
-    maxlength: 30,
+    maxlength: 130,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
