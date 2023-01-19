@@ -34,7 +34,6 @@
         "no-underscore-dangle": ["error", { "allow": ["_id"] }],
         "no-unused-vars": "off",
         "no-console": "off",
-        "prettier/prettier": ["error", { "endOfLine" : "off"}],
         "linebreak-style": ["error", "windows"],
         "import/extensions": [
             "error",
