@@ -1,9 +1,9 @@
+import mongoose from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
 import Card from '../models/card';
 import { IGetUserRequest } from '../models/user';
 import BadRequestError from '../errors/BadRequestErr';
 import NotFoundError from '../errors/NotFoundErr';
-import mongoose from 'mongoose';
 
 export const createCard = (req: IGetUserRequest, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
@@ -12,34 +12,32 @@ export const createCard = (req: IGetUserRequest, res: Response, next: NextFuncti
   return Card.create({ name, link, owner: userId })
     .then((card) => res.send({ data: card }))
     .catch((error) => {
-      if (error instanceof mongoose.Error.ValidationError)
-        next(new BadRequestError('Неправильные поля карточки.'));
+      if (error instanceof mongoose.Error.ValidationError) next(new BadRequestError('Неправильные поля карточки.'));
       next(error);
     });
 };
 
-export const getCards = (req: Request, res: Response, next: NextFunction) => {
-  return Card.find({})
-    .then((cards) => res.send({ data: cards }))
-    .catch((error) => {
-      next(error);
-    });
-};
+export const getCards = (req: Request, res: Response, next: NextFunction) => Card.find({})
+  .then((cards) => res.send({ data: cards }))
+  .catch((error) => {
+    next(error);
+  });
 
 export const delCardById = async (req: Request, res: Response, next: NextFunction) => {
-  try{
+  try {
     const card = await Card.findByIdAndRemove({ _id: req.params.cardId });
     if (!card) throw new NotFoundError('Карточка по id не найдена.');
-    return res.status(200).send({ data: card })
+    return res.status(200).send({ data: card });
   } catch (error) {
-    if (error instanceof NotFoundError)
+    if (error instanceof NotFoundError) {
       return res.status(error.statusCode).send({ message: error.message });
-    next(error);
+    }
+    return next(error);
   }
 };
 
 export const likeCard = async (req: IGetUserRequest, res: Response, next: NextFunction) => {
-  try{
+  try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
       { $addToSet: { likes: req.user?._id } }, // добавить _id в массив, если его там нет
@@ -48,11 +46,13 @@ export const likeCard = async (req: IGetUserRequest, res: Response, next: NextFu
     if (!card) throw new NotFoundError('Карточка по id не найдена.');
     return res.status(200).send({ data: card });
   } catch (error) {
-    if (error instanceof NotFoundError)
+    if (error instanceof NotFoundError) {
       return res.status(error.statusCode).send({ message: error.message });
-    if (error instanceof mongoose.Error.CastError)
+    }
+    if (error instanceof mongoose.Error.CastError) {
       next(new BadRequestError('Неправильные поля карточки.'));
-    next(error);
+    }
+    return next(error);
   }
 };
 
@@ -66,10 +66,12 @@ export const dislikeCard = async (req: IGetUserRequest, res: Response, next: Nex
     if (!card) throw new NotFoundError('Карточка по id не найдена.');
     return res.status(200).send({ data: card });
   } catch (error) {
-    if (error instanceof NotFoundError)
+    if (error instanceof NotFoundError) {
       return res.status(error.statusCode).send({ message: error.message });
-    else if (error instanceof mongoose.Error.CastError)
+    }
+    if (error instanceof mongoose.Error.CastError) {
       next(new BadRequestError('Неправильные поля пользователя.'));
-    next(error);
+    }
+    return next(error);
   }
 };

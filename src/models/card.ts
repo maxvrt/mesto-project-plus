@@ -20,6 +20,7 @@ const cardSchema = new mongoose.Schema<ICard>({
     required: true,
     minlength: 2,
     maxlength: 130,
+    validate: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=]+$/,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

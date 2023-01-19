@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema<IUser>({
         return v.length >= 2 && v.length <= 30;
       },
       message: 'Длинна имени должна быть больше 2',
-    }
+    },
   },
   about: {
     type: String,
@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema<IUser>({
     required: true,
     minlength: 4,
     maxlength: 230,
+    validate: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=]+$/,
   },
 });
 
