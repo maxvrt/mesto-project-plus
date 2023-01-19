@@ -22,14 +22,16 @@ app.use((req: IGetUserRequest, res: Response, next: NextFunction) => {
 });
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
-
-
+app.get('*',
+  function(req: Request, res: Response) {
+    res.status(404).send({ message: `Нет такой страницы` })
+  }
+);
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof BadRequestError)
     return res.status(err.statusCode).send({ message: err.message });
   return res.status(500).send({ message: `Общая ошибка: ${err.message} Type:${err.name}` });
 });
-
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT} 111`);
 });
