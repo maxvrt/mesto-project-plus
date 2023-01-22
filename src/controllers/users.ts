@@ -84,9 +84,6 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     }
     return res.status(200).send({ data: user });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return res.status(error.statusCode).send({ message: error.message });
-    }
     return next(error);
   }
 };

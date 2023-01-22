@@ -9,6 +9,8 @@ import NotFoundError from './errors/NotFoundErr';
 import AuthError from './errors/AuthErr';
 import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
+import { requestLogger, errorLogger } from './middlewares/logger';
+import errorHandler from './middlewares/errorMiddleware';
 
 dotenv.config();
 mongoose.set('strictQuery', false);
@@ -19,6 +21,7 @@ const app = express();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(requestLogger);
 
 app.post('/signin', login);
 app.post('/signup', createUser);
@@ -28,13 +31,9 @@ app.use('/cards', cardRouter);
 app.get('*', (req: Request, res: Response) => {
   res.status(404).send({ message: 'Нет такой страницы' });
 });
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  if (err instanceof BadRequestError || err instanceof AuthError) {
-    return res.status(err.statusCode)
-      .send({ message: err.message });
-  }
-  return res.status(500).send({ message: `Общая ошибка: ${err.message} Type:${err.name}` });
-});
+app.use(errorLogger);
+app.use(errorHandler);
+
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT} 111`);
 });

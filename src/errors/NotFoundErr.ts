@@ -1,4 +1,6 @@
-class NotFoundErr extends Error {
+import CommonError from './CommonError';
+
+class NotFoundErr extends CommonError {
   statusCode: number;
 
   name: string;
@@ -8,7 +10,7 @@ class NotFoundErr extends Error {
   constructor(message: string) {
     super(message);
     this.statusCode = 404;
-    this.name = 'NotFoundError';
+    this.name = 'NotFoundErr';
     this.message = message;
   }
 }

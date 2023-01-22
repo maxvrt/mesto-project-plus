@@ -1,4 +1,6 @@
-class AuthErr extends Error {
+import CommonError from './CommonError';
+
+class AuthErr extends CommonError {
   statusCode: number;
 
   name: string;
@@ -8,7 +10,7 @@ class AuthErr extends Error {
   constructor(message: string) {
     super(message);
     this.statusCode = 401;
-    this.name = 'AuthError';
+    this.name = 'AuthErr';
     this.message = message;
   }
 }
