@@ -1,6 +1,6 @@
 import CommonError from './CommonError';
 
-class NotFoundErr extends CommonError {
+class DoubleErr extends CommonError {
   statusCode: number;
 
   name: string;
@@ -9,10 +9,10 @@ class NotFoundErr extends CommonError {
 
   constructor(message: string) {
     super(message);
-    this.statusCode = 404;
-    this.name = 'NotFoundErr';
+    this.statusCode = 409;
+    this.name = 'DoubleErr';
     this.message = message;
   }
 }
 
-export default NotFoundErr;
+export default DoubleErr;

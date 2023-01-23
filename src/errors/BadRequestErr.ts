@@ -1,4 +1,6 @@
-class BadRequestErr extends Error {
+import CommonError from './CommonError';
+
+class BadRequestErr extends CommonError {
   statusCode: number;
 
   name: string;

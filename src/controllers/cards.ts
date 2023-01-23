@@ -23,15 +23,12 @@ export const getCards = (req: Request, res: Response, next: NextFunction) => Car
     next(error);
   });
 
-export const delCardById = async (req: Request, res: Response, next: NextFunction) => {
+export const delCardById = async (req: IGetUserRequest, res: Response, next: NextFunction) => {
   try {
-    const card = await Card.findByIdAndRemove({ _id: req.params.cardId });
-    if (!card) throw new NotFoundError('Карточка по id не найдена.');
+    const card = await Card.findOne({ _id: req.params.cardId, owner: req.user?._id });
+    if (!card) throw new NotFoundError('Карточка по не найдена.');
     return res.status(200).send({ data: card });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return res.status(error.statusCode).send({ message: error.message });
-    }
     return next(error);
   }
 };
@@ -46,9 +43,6 @@ export const likeCard = async (req: IGetUserRequest, res: Response, next: NextFu
     if (!card) throw new NotFoundError('Карточка по id не найдена.');
     return res.status(200).send({ data: card });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return res.status(error.statusCode).send({ message: error.message });
-    }
     if (error instanceof mongoose.Error.CastError) {
       next(new BadRequestError('Неправильные поля карточки.'));
     }
@@ -66,9 +60,6 @@ export const dislikeCard = async (req: IGetUserRequest, res: Response, next: Nex
     if (!card) throw new NotFoundError('Карточка по id не найдена.');
     return res.status(200).send({ data: card });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return res.status(error.statusCode).send({ message: error.message });
-    }
     if (error instanceof mongoose.Error.CastError) {
       next(new BadRequestError('Неправильные поля пользователя.'));
     }

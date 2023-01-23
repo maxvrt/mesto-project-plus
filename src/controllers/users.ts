@@ -1,17 +1,31 @@
 import mongoose from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
-import User, { IGetUserRequest } from '../models/user';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import User, { IGetUserRequest, IUser } from '../models/user';
 import BadRequestError from '../errors/BadRequestErr';
 import NotFoundError from '../errors/NotFoundErr';
+import AuthError from '../errors/AuthErr';
+import DoubleErr from '../errors/DoubleErr';
+
+const { JWT_SECRET = 'secret-key' } = process.env;
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
   try {
-    const user = await User.create({ name, about, avatar });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name, about, avatar, email, password: hashedPassword,
+    });
     return res.status(201).send({ data: user });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return next(new DoubleErr(`Дубликат email. ${error.message}`));
+    }
     if (error instanceof mongoose.Error.ValidationError) {
-      return next(new BadRequestError('Неправильные поля пользователя.'));
+      return next(new BadRequestError(`Неправильные поля пользователя. ${error.message}`));
     }
     return next(error);
   }
@@ -62,6 +76,27 @@ export const getUsers = (req: Request, res: Response, next: NextFunction) => Use
   .then((users) => res.send({ data: users }))
   .catch(next);
 
+export const getMe = async (req: IGetUserRequest, res: Response, next: NextFunction) => {
+  try {
+    console.log(`ИД пользователя ${req.user?._id}`);
+    const user = await User.findById(req.user?._id);
+    if (!user) {
+      throw new NotFoundError('Пользователь по id не найден');
+    }
+    return res.status(201).send({ data: user });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      res.status(error.statusCode).send({
+        message: error.message,
+      });
+    }
+    if (error instanceof mongoose.Error.ValidationError) {
+      return next(new BadRequestError('Неправильные поля пользователя.'));
+    }
+    return next(error);
+  }
+};
+
 export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -70,9 +105,23 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     }
     return res.status(200).send({ data: user });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return res.status(error.statusCode).send({ message: error.message });
-    }
     return next(error);
   }
+};
+
+export const login = (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        JWT_SECRET,
+        { expiresIn: '7d' },
+      );
+      // вернём токен
+      res.send({ token });
+    })
+    .catch((err:Error) => {
+      next(new AuthError('Неправильный логин или пароль'));
+    });
 };
