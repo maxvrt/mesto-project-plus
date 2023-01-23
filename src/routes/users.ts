@@ -7,9 +7,11 @@ import {
 const router = Router();
 
 router.get('/', getUsers);
+router.get('/me', getMe);
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24).required(),
+    userId: Joi.string().alphanum().min(2).max(200)
+      .required(),
   }),
 }), getUserById);
 router.patch('/me', celebrate({
@@ -23,5 +25,4 @@ router.patch('/me/avatar', celebrate({
     avatar: Joi.string().required().min(5).max(130),
   }),
 }), updateAvatar);
-router.get('/me', getMe);
 export default router;

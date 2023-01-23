@@ -76,9 +76,26 @@ export const getUsers = (req: Request, res: Response, next: NextFunction) => Use
   .then((users) => res.send({ data: users }))
   .catch(next);
 
-export const getMe = (req: Request, res: Response, next: NextFunction) => User.find({})
-  .then((users) => res.send({ data: users }))
-  .catch(next);
+export const getMe = async (req: IGetUserRequest, res: Response, next: NextFunction) => {
+  try {
+    console.log(`ИД пользователя ${req.user?._id}`);
+    const user = await User.findById(req.user?._id);
+    if (!user) {
+      throw new NotFoundError('Пользователь по id не найден');
+    }
+    return res.status(201).send({ data: user });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      res.status(error.statusCode).send({
+        message: error.message,
+      });
+    }
+    if (error instanceof mongoose.Error.ValidationError) {
+      return next(new BadRequestError('Неправильные поля пользователя.'));
+    }
+    return next(error);
+  }
+};
 
 export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   try {
