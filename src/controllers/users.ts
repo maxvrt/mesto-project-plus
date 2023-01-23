@@ -6,6 +6,7 @@ import User, { IGetUserRequest, IUser } from '../models/user';
 import BadRequestError from '../errors/BadRequestErr';
 import NotFoundError from '../errors/NotFoundErr';
 import AuthError from '../errors/AuthErr';
+import DoubleErr from '../errors/DoubleErr';
 
 const { JWT_SECRET = 'secret-key' } = process.env;
 
@@ -19,7 +20,10 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       name, about, avatar, email, password: hashedPassword,
     });
     return res.status(201).send({ data: user });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return next(new DoubleErr(`Дубликат email. ${error.message}`));
+    }
     if (error instanceof mongoose.Error.ValidationError) {
       return next(new BadRequestError(`Неправильные поля пользователя. ${error.message}`));
     }

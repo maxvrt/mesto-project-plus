@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
+import { errors } from 'celebrate';
 import userRouter from './routes/users';
 import cardRouter from './routes/cards';
 import { IGetUserRequest } from './models/user';
@@ -32,6 +33,7 @@ app.get('*', (req: Request, res: Response) => {
   res.status(404).send({ message: 'Нет такой страницы' });
 });
 app.use(errorLogger);
+app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {
