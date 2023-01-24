@@ -4,6 +4,7 @@ import Card from '../models/card';
 import { IGetUserRequest } from '../models/user';
 import BadRequestError from '../errors/BadRequestErr';
 import NotFoundError from '../errors/NotFoundErr';
+import ForbiddenErr from '../errors/ForbiddenErr';
 
 export const createCard = (req: IGetUserRequest, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
@@ -25,9 +26,17 @@ export const getCards = (req: Request, res: Response, next: NextFunction) => Car
 
 export const delCardById = async (req: IGetUserRequest, res: Response, next: NextFunction) => {
   try {
-    const card = await Card.findOne({ _id: req.params.cardId, owner: req.user?._id });
-    if (!card) throw new NotFoundError('Карточка по не найдена.');
-    return res.status(200).send({ data: card });
+    const card = await Card.findOne({ _id: req.params.cardId });
+    if (!card) {
+      throw new NotFoundError('Карточка по не найдена.');
+    } else {
+      const userId = card.owner;
+      if (req.user && userId.toString() !== req.user._id.toString()) {
+        throw new ForbiddenErr('Нет прав для удаления.');
+      }
+      const cardDeleted = await Card.findByIdAndRemove({ _id: req.params.cardId });
+      return res.status(200).send({ data: cardDeleted });
+    }
   } catch (error) {
     return next(error);
   }
