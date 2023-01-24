@@ -26,7 +26,7 @@ export const getCards = (req: Request, res: Response, next: NextFunction) => Car
 
 export const delCardById = async (req: IGetUserRequest, res: Response, next: NextFunction) => {
   try {
-    const card = await Card.findByIdAndRemove({ _id: req.params.cardId });
+    const card = await Card.findOne({ _id: req.params.cardId });
     if (!card) {
       throw new NotFoundError('Карточка по не найдена.');
     } else {
@@ -34,7 +34,8 @@ export const delCardById = async (req: IGetUserRequest, res: Response, next: Nex
       if (req.user && userId.toString() !== req.user._id.toString()) {
         throw new ForbiddenErr('Нет прав для удаления.');
       }
-      return res.status(200).send({ data: card });
+      const cardDeleted = await Card.findByIdAndRemove({ _id: req.params.cardId });
+      return res.status(200).send({ data: cardDeleted });
     }
   } catch (error) {
     return next(error);
