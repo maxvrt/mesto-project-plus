@@ -15,6 +15,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     name, about, avatar, email, password,
   } = req.body;
   try {
+    console.log('Вошли в create user');
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       name, about, avatar, email, password: hashedPassword,
@@ -35,14 +36,14 @@ export const updateUser = async (req: IGetUserRequest, res: Response, next: Next
   try {
     const { name, about } = req.body;
     const user = await User
-      .findByIdAndUpdate(req.user?._id, { name, about }, { runValidators: true });
+      .findByIdAndUpdate(req.user?._id, { name, about }, { runValidators: true, new: true });
     if (!user) {
       throw new NotFoundError('Пользователь по id не найден');
     }
     return res.status(201).send({ data: user });
   } catch (error) {
     if (error instanceof NotFoundError) {
-      return res.status(error.statusCode).send({ message: error.message });
+      return next(new NotFoundError('Пользователь по id не найден'));
     }
     if (error instanceof mongoose.Error.ValidationError) {
       return next(new BadRequestError('Неправильные поля пользователя.'));
@@ -54,16 +55,18 @@ export const updateUser = async (req: IGetUserRequest, res: Response, next: Next
 export const updateAvatar = async (req: IGetUserRequest, res: Response, next: NextFunction) => {
   try {
     const { avatar } = req.body;
-    const user = await User.findByIdAndUpdate(req.user?._id, { avatar }, { runValidators: true });
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      { avatar },
+      { runValidators: true, new: true },
+    );
     if (!user) {
       throw new NotFoundError('Пользователь по id не найден');
     }
     return res.status(201).send({ data: user });
   } catch (error) {
     if (error instanceof NotFoundError) {
-      res.status(error.statusCode).send({
-        message: error.message,
-      });
+      return next(new NotFoundError('Пользователь по id не найден'));
     }
     if (error instanceof mongoose.Error.ValidationError) {
       return next(new BadRequestError('Неправильные поля пользователя.'));
@@ -86,9 +89,7 @@ export const getMe = async (req: IGetUserRequest, res: Response, next: NextFunct
     return res.status(201).send({ data: user });
   } catch (error) {
     if (error instanceof NotFoundError) {
-      res.status(error.statusCode).send({
-        message: error.message,
-      });
+      return next(new NotFoundError('Пользователь по id не найден'));
     }
     if (error instanceof mongoose.Error.ValidationError) {
       return next(new BadRequestError('Неправильные поля пользователя.'));
