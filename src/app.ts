@@ -26,11 +26,11 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
-app.use(limiter);
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(requestLogger);
+app.use(limiter);
 
 app.post('/signup', createUser);
 app.post('/signin', login);
