@@ -33,6 +33,7 @@ app.use(requestLogger);
 app.use(limiter);
 
 app.get('/crash-test', () => {
+  console.log(`Вошли в /crash-test`);
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
   }, 0);
