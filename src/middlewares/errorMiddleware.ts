@@ -12,7 +12,8 @@ const errorHandler = (err: CommonError, req: Request, res:Response, next: NextFu
     || err instanceof NotFoundErr
     || err instanceof DoubleErr
     || err instanceof ForbiddenErr) {
-    res.status(err.statusCode)
+    //TODO заменил просто res на return res иначе ошибка
+    return res.status(err.statusCode)
       .send({ message: err.message });
   }
   res.status(500).send({ message: `Общая ошибка: ${err.message} Type:${err.name}` });
